@@ -48,19 +48,15 @@ export default {
           props: {
             placeholder: '请选择模块'
           },
-          options: [{value: '111', label:'aaaa'}]
-          // options: () => {
-          //   searchFlowInfoList(params = {}).then(response => {
-          //     let list = response.result.list
-          //     let selectList = formatter.formatSelectList(
-          //       list,
-          //       'flowInfoId',
-          //       'flowName'
-          //     )
-          //     console,log('selectList', selectList)
-          //     this.options = selectList
-          //   })
-          // }
+          remote: {
+            api: searchFlowInfoList,
+            params: {},
+            option: {
+              value: 'flowInfoId',
+              label: 'flowName'
+            }
+          },
+          options: []
         },
         {
           type: 'Select',
@@ -68,7 +64,8 @@ export default {
           code: 'moduleVersion',
           props: {
             placeholder: '请选择模块'
-          }
+          },
+          options: []
         },
         {
           type: 'Input',
@@ -301,21 +298,32 @@ export default {
     handleRenderView(data) {
       let vm = this
       flowRender.viewFlowInfo(vm, data)
-    }
+    },
 
-    // handleGetOptions() {
-    //   let params = {}
-    //   searchFlowInfoList(params).then(response => {
-    //     let list = response.result.list
-    //     let selectList = formatter.formatSelectList(
-    //       list,
-    //       'flowInfoId',
-    //       'flowName'
-    //     )
-    //     this.options1 = selectList
-    //     console.log('this.options1', this.options1)
-    //   })
-    // }
+    handleSelectFormItem(formItems = []) {
+      for (let i = 0; i < formItems.length; i++) {
+        let item = formItems[i]
+        if (item.type === 'Select' && item.remote) {
+          let remoteConfig = item.remote
+          let params = remoteConfig.params || {}
+          let api = remoteConfig.api
+          let option = remoteConfig.option
+          api(params).then(response => {
+            let list = response.result.list
+            let selectList = formatter.formatSelectList(
+              list,
+              option.value,
+              option.label
+            )
+            item.options = selectList
+          })
+        }
+      }
+    }
+  },
+
+  created() {
+    this.handleSelectFormItem(this.searchFormItems)
   }
 }
 </script>
